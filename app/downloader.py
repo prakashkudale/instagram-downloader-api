@@ -15,8 +15,8 @@ DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
 def _yt_dlp_download(url: str, output_path: Path) -> Path:
     ydl_opts = {
         "outtmpl": str(output_path / "%(id)s.%(ext)s"),
-        "format": "bestvideo+bestaudio/best",
-        "merge_output_format": "mp4",
+        "format": "mp4",  # ⚡ faster, avoids merging
+        "cookiefile": "/home/Delta/cookies.txt",  # ✅ IMPORTANT
         "quiet": True,
         "no_warnings": True,
         "ignoreerrors": False,
@@ -27,9 +27,12 @@ def _yt_dlp_download(url: str, output_path: Path) -> Path:
             )
         },
     }
+
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
         filename = ydl.prepare_filename(info)
+        if not filename.endswith(".mp4"):
+        filename = filename.rsplit(".", 1)[0] + ".mp4"
         return Path(filename)
 
 
