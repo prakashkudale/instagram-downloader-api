@@ -13,21 +13,18 @@ DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def _yt_dlp_download(url: str, output_path: Path) -> Path:
+    cookie_path = "/home/Delta/cookies.txt"
+
     ydl_opts = {
         "outtmpl": str(output_path / "%(id)s.%(ext)s"),
         "format": "bestvideo+bestaudio/best",
         "merge_output_format": "mp4",
-        "cookiefile": "/home/Delta/cookies.txt",
-        "quiet": True,
-        "no_warnings": True,
-        "ignoreerrors": False,
-        "http_headers": {
-            "User-Agent": (
-                "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) "
-                "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
-            )
-        },
+        "quiet": False,  # 👈 enable logs for debugging
+        "no_warnings": False,
+        "cookiefile": cookie_path,
     }
+
+    print("Using cookies from:", cookie_path)
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
