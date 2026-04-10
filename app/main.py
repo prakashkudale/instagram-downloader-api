@@ -115,10 +115,6 @@ async def download_media(request: DownloadRequest):
 
 @app.post("/stream", tags=["Stream"], dependencies=[Depends(verify_api_key)])
 async def stream_media(request: DownloadRequest):
-    """
-    Gets direct streaming URL without saving to disk.
-    Best for production/cloud deployment.
-    """
     url = clean_instagram_url(request.url)
     url_type = detect_instagram_url_type(url)
     logger.info(f"Stream request | type={url_type} | url={url}")
@@ -131,20 +127,28 @@ async def stream_media(request: DownloadRequest):
             )
 
         ydl_opts = {
-            "quiet": True,
-            "no_warnings": True,
+            "quiet": False,  # 👈 enable logs
+            "no_warnings": False,
             "format": "best",
             "skip_download": True,
+            "cookiefile": "/home/Delta/cookies.txt",  # 🔥 THIS IS THE FIX
         }
+
+        print("Using cookies for stream:", os.path.exists("/home/Delta/cookies.txt"))
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
-            direct_url = info.get("url")
+
+            # 🔥 IMPORTANT: Instagram sometimes uses formats array
+            if "url" in info:
+                direct_url = info["url"]
+            elif "formats" in info:
+                direct_url = info["formats"][-1]["url"]  # best quality
+            else:
+                raise HTTPException(status_code=500, detail="No media URL found")
+
             ext = info.get("ext", "mp4")
             title = info.get("title", "instagram_video")
-
-            if not direct_url:
-                raise HTTPException(status_code=500, detail="Could not extract direct media URL.")
 
             return {
                 "success": True,
