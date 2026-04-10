@@ -15,7 +15,8 @@ DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
 def _yt_dlp_download(url: str, output_path: Path) -> Path:
     ydl_opts = {
         "outtmpl": str(output_path / "%(id)s.%(ext)s"),
-        "format": "mp4",
+        "format": "bestvideo+bestaudio/best",
+        "merge_output_format": "mp4",
         "cookiefile": "/home/Delta/cookies.txt",
         "quiet": True,
         "no_warnings": True,
